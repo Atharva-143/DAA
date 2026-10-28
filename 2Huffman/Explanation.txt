@@ -1,0 +1,394 @@
+# DAA EXPERIMENT 2: HUFFMAN CODING
+
+## 1. AIM
+
+To implement Huffman Encoding using a greedy strategy.
+
+## 2. THEORY
+
+Huffman Coding is a lossless data compression algorithm that assigns variable-length binary codes to characters based on their frequencies.
+
+* Characters with higher frequencies generally receive shorter codes.
+* Characters with lower frequencies generally receive longer codes.
+* It reduces the number of bits required to store data.
+
+**Example:** A frequently occurring character might receive code `0`, while a less frequent character might receive `1101`.
+
+## 3. CODE EXPLANATION
+
+### A. Header Files
+
+```cpp
+#include <iostream>
+#include <queue>
+#include <vector>
+#include <string>
+using namespace std;
+```
+
+* `iostream`: Used for input and output.
+* `queue`: Provides the priority queue.
+* `vector`: Stores characters and their frequencies.
+* `string`: Stores the generated binary codes.
+* `using namespace std`: Avoids writing `std::` repeatedly.
+
+### B. Node Structure
+
+```cpp
+struct Node
+{
+    char ch;
+    int freq;
+    Node *left, *right;
+
+    Node(char c, int f)
+    {
+        ch = c;
+        freq = f;
+        left = right = nullptr;
+    }
+};
+```
+
+**Explanation:**
+
+* `ch`: Stores the character.
+* `freq`: Stores the character's frequency or the combined frequency of an internal node.
+* `left` and `right`: Pointers to the left and right child nodes.
+* `Node(char c, int f)`: Constructor that initializes the character and frequency.
+* `nullptr`: Indicates that the node initially has no children.
+
+Each character is represented by a leaf node. Internal nodes store the sum of the frequencies of their children.
+
+### C. Compare Structure
+
+```cpp
+struct Compare
+{
+    bool operator()(Node* a, Node* b)
+    {
+        return a->freq > b->freq;
+    }
+};
+```
+
+**Explanation:**
+
+* This structure defines how nodes are compared inside the priority queue.
+* It makes the priority queue behave as a min-heap.
+* The node with the smallest frequency is given the highest priority and is removed first.
+
+**Why is it required?**
+
+Huffman Coding repeatedly selects the two nodes with the smallest frequencies. The priority queue makes this selection efficient.
+
+### D. Print Huffman Codes Function
+
+```cpp
+void printCodes(Node* root, string code)
+{
+    if (root == nullptr)
+        return;
+
+    if (root->left == nullptr && root->right == nullptr)
+        cout << root->ch << " : " << code << endl;
+
+    printCodes(root->left, code + "0");
+    printCodes(root->right, code + "1");
+}
+```
+
+**Explanation:**
+
+* `root`: Points to the current node.
+* `code`: Stores the binary code formed along the path from the root.
+* `if (root == nullptr)`: Stops when there is no node to visit.
+* `if (root->left == nullptr && root->right == nullptr)`: Checks whether the current node is a leaf containing a character.
+* `cout`: Prints the character and its Huffman code.
+* `code + "0"`: Adds `0` when moving to the left child.
+* `code + "1"`: Adds `1` when moving to the right child.
+
+The function uses recursion to traverse the Huffman tree and generate codes for all characters.
+
+### E. Huffman Encoding Function
+
+```cpp
+void huffmanEncoding(vector<char>& chars, vector<int>& freq)
+{
+    priority_queue<Node*, vector<Node*>, Compare> pq;
+```
+
+**Explanation:**
+
+* `chars` stores the input characters.
+* `freq` stores their corresponding frequencies.
+* `&` passes the vectors by reference, avoiding unnecessary copies.
+* `pq` is a priority queue containing pointers to tree nodes.
+* `Compare` ensures that the node with the smallest frequency is selected first.
+
+### F. Creating Leaf Nodes
+
+```cpp
+for (int i = 0; i < chars.size(); i++)
+    pq.push(new Node(chars[i], freq[i]));
+```
+
+**Explanation:**
+
+* The loop visits every input character.
+* `new Node(chars[i], freq[i])` creates a node with its character and frequency.
+* `pq.push()` inserts the node into the priority queue.
+
+Initially, every character has its own leaf node.
+
+### G. Building the Huffman Tree
+
+```cpp
+while (pq.size() > 1)
+{
+    Node* left = pq.top();
+    pq.pop();
+
+    Node* right = pq.top();
+    pq.pop();
+
+    Node* newNode = new Node('-', left->freq + right->freq);
+    newNode->left = left;
+    newNode->right = right;
+
+    pq.push(newNode);
+}
+```
+
+**Explanation:**
+
+1. The loop continues while more than one node remains.
+2. `pq.top()` retrieves the node with the smallest frequency.
+3. `pq.pop()` removes that node from the queue.
+4. The next two statements retrieve and remove the second-smallest node.
+5. A new internal node is created with the sum of both frequencies.
+6. The first extracted node becomes the left child.
+7. The second extracted node becomes the right child.
+8. The new node is inserted back into the priority queue.
+
+This process repeats until only one node remains.
+
+**Why is `'-'` used?**
+
+The internal node does not represent an actual input character, so `'-'` is used as a placeholder.
+
+### H. Generating the Final Codes
+
+```cpp
+Node* root = pq.top();
+
+cout << "\nHuffman Codes:\n";
+printCodes(root, "");
+```
+
+**Explanation:**
+
+* When the loop ends, only the root node remains in the priority queue.
+* `pq.top()` retrieves the root of the completed Huffman tree.
+* `printCodes(root, "")` traverses the tree to generate binary codes.
+* The empty string means that no bits have been assigned before starting at the root.
+
+### I. Main Function
+
+```cpp
+int main()
+{
+    int n;
+
+    cout << "Enter number of characters: ";
+    cin >> n;
+```
+
+* `main()` is the starting point of program execution.
+* `n` stores the number of characters.
+
+```cpp
+vector<char> chars(n);
+vector<int> freq(n);
+```
+
+* Creates two vectors of size `n`.
+* `chars` stores characters.
+* `freq` stores their corresponding frequencies.
+
+The following loops accept the characters and their frequencies:
+
+```cpp
+for (int i = 0; i < n; i++)
+    cin >> chars[i];
+
+for (int i = 0; i < n; i++)
+    cin >> freq[i];
+```
+
+Finally:
+
+```cpp
+huffmanEncoding(chars, freq);
+return 0;
+```
+
+* Calls the Huffman Encoding function.
+* `return 0` indicates successful program termination.
+
+## 4. ALGORITHM WORKING WITH EXAMPLE
+
+Input:
+
+Characters: a, f, v, c, w
+
+Frequencies: 3, 2, 1, 5, 7
+
+**Step 1:** Select the two smallest frequencies: v(1) and f(2).
+
+Combine them to create a new node with frequency 3.
+
+**Step 2:** The remaining frequencies are 3, 3, 5, 7.
+
+Combine two nodes with frequency 3 to create a new node with frequency 6.
+
+**Step 3:** The remaining frequencies are 5, 6, 7.
+
+Combine 5 and 6 to create a new node with frequency 11.
+
+**Step 4:** The remaining frequencies are 7 and 11.
+
+Combine them to create the root node with frequency 18.
+
+**Step 5:** Traverse the tree.
+
+* Left edge = 0
+* Right edge = 1
+
+The resulting codes are:
+
+```text
+w : 0
+c : 10
+a : 110
+v : 1110
+f : 1111
+```
+
+## 5. TIME AND SPACE COMPLEXITY
+
+Let `n` be the number of unique characters.
+
+**Time Complexity: O(n log n)**
+
+* Creating the leaf nodes requires O(n log n) time with priority queue insertions.
+* Building the tree performs n-1 combinations, each involving priority queue operations.
+* Therefore, the overall time complexity is O(n log n).
+
+**Auxiliary Space Complexity: O(n)**
+
+* The Huffman tree contains O(n) nodes.
+* The priority queue stores O(n) nodes.
+* The tree traversal uses recursive stack space.
+
+The space complexity is O(n), excluding the input and output storage.
+
+## 6. IMPORTANT ORAL QUESTIONS AND ANSWERS
+
+**Q1. What is Huffman Coding?**
+
+It is a lossless data compression algorithm that assigns variable-length binary codes based on character frequencies.
+
+**Q2. What is a greedy algorithm?**
+
+A greedy algorithm makes the best available local choice at each step to construct a solution.
+
+**Q3. Why is Huffman Coding called a greedy algorithm?**
+
+Because it repeatedly combines the two nodes with the smallest frequencies.
+
+**Q4. What is a priority queue?**
+
+A data structure that removes elements according to their priority rather than their insertion order.
+
+**Q5. What is a min-heap?**
+
+A heap in which the smallest element has the highest priority and is available at the top.
+
+**Q6. Why do we use a min-heap in Huffman Coding?**
+
+To efficiently select the two nodes with the smallest frequencies.
+
+**Q7. What is a Huffman tree?**
+
+A binary tree used to generate Huffman codes for input characters.
+
+**Q8. What is a leaf node?**
+
+A node with no children. In this program, it represents an input character.
+
+**Q9. What is an internal node?**
+
+A node created by combining two nodes. Its frequency is the sum of their frequencies.
+
+**Q10. Why are variable-length codes used?**
+
+To assign shorter codes to frequent characters and longer codes to less frequent characters, reducing the total encoded size.
+
+**Q11. What is lossless compression?**
+
+Compression in which the original data can be recovered exactly without losing information.
+
+**Q12. What is the purpose of the Compare structure?**
+
+It makes the priority queue behave as a min-heap based on node frequencies.
+
+**Q13. Why do we use recursion in `printCodes()`?**
+
+To traverse the Huffman tree and generate codes for all leaf nodes.
+
+**Q14. Why is 0 assigned to the left edge and 1 to the right edge?**
+
+These are the conventions used by this implementation. Reversing them would also produce valid Huffman codes.
+
+**Q15. What is the time complexity of Huffman Coding?**
+
+O(n log n), where n is the number of unique characters.
+
+**Q16. What is the space complexity?**
+
+O(n) auxiliary space for the tree, priority queue, and traversal stack.
+
+**Q17. Why is `'-'` used in the internal node?**
+
+It is a placeholder because internal nodes do not represent actual input characters.
+
+**Q18. What happens when the priority queue contains only one node?**
+
+That node becomes the root of the completed Huffman tree.
+
+**Q19. Are Huffman codes unique?**
+
+Not always. Different choices when frequencies are equal can produce different but equally optimal codes.
+
+**Q20. What is a prefix-free code?**
+
+A code in which no character's code is the prefix of another character's code. Huffman Coding produces prefix-free codes.
+
+## 7. CONCLUSION
+
+Successfully implemented Huffman Encoding using a greedy strategy in C++.
+
+## 8. QUICK REVISION
+
+* Algorithm type: Greedy
+* Purpose: Lossless data compression
+* Data structure: Min-heap priority queue
+* Selection: Two smallest frequencies
+* Left edge: 0
+* Right edge: 1
+* Leaf node: Represents a character
+* Internal node: Stores the sum of child frequencies
+* Time complexity: O(n log n)
+* Auxiliary space complexity: O(n)
+* Result: Variable-length, prefix-free binary codes

@@ -1,0 +1,319 @@
+# DAA EXPERIMENT 4: 0/1 KNAPSACK
+
+## 1. AIM
+
+To implement the 0/1 Knapsack problem using Dynamic Programming and analyze its time and space complexity.
+
+## 2. THEORY
+
+The 0/1 Knapsack problem involves selecting items with given weights and values to maximize the total value without exceeding the knapsack's capacity.
+
+Each item has two choices:
+
+1. Include the complete item.
+2. Exclude the item.
+
+Items cannot be divided.
+
+**Example:** If an item weighs 5 kg and has a value of ₹100, we can either take the entire item or leave it. We cannot take half of it.
+
+## 3. WHAT IS DYNAMIC PROGRAMMING?
+
+Dynamic Programming (DP) solves a problem by breaking it into smaller subproblems and storing their results to avoid recalculating them.
+
+In this program, we use a two-dimensional DP table to calculate the maximum value for different numbers of items and knapsack capacities.
+
+## 4. CODE EXPLANATION
+
+### A. Header Files
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+```
+
+* `iostream`: Provides input and output using `cin` and `cout`.
+* `vector`: Stores item weights, values, and the DP table.
+* `algorithm`: Provides the `max()` function.
+* `using namespace std`: Avoids writing `std::` repeatedly.
+
+### B. Knapsack Function
+
+```cpp
+int knapsack(int W, vector<int>& wt, vector<int>& val, int n)
+```
+
+* `W`: Maximum capacity of the knapsack.
+* `wt`: Vector containing item weights.
+* `val`: Vector containing item values.
+* `n`: Total number of items.
+* `int`: The function returns the maximum value as an integer.
+
+The vectors are passed by reference using `&`, avoiding unnecessary copies.
+
+### C. Creating the DP Table
+
+```cpp
+vector<vector<int>> dp(n + 1, vector<int>(W + 1, 0));
+```
+
+* Creates a two-dimensional table named `dp`.
+* Rows represent the number of items considered.
+* Columns represent the available knapsack capacity.
+* Every cell is initially set to zero.
+
+**Meaning of `dp[i][w]`:**
+
+It represents the maximum value obtainable using the first `i` items with a capacity of `w`.
+
+We use `n + 1` rows and `W + 1` columns to include the cases of zero items and zero capacity.
+
+### D. Outer and Inner Loops
+
+```cpp
+for (int i = 1; i <= n; i++)
+{
+    for (int w = 1; w <= W; w++)
+```
+
+* The outer loop processes items one by one.
+* The inner loop considers every capacity from 1 to `W`.
+* For each combination, the program calculates the maximum possible value.
+
+### E. Checking Item Weight
+
+```cpp
+if (wt[i - 1] <= w)
+```
+
+Checks whether the current item's weight fits within the available capacity.
+
+**Why `i - 1`?**
+
+The DP table starts its item count at 1, but vector indices start at 0. Therefore, the current item's index is `i - 1`.
+
+### F. Including or Excluding an Item
+
+```cpp
+dp[i][w] = max(
+    val[i - 1] + dp[i - 1][w - wt[i - 1]],
+    dp[i - 1][w]
+);
+```
+
+The algorithm considers two possibilities.
+
+**1. Include the item:**
+
+`val[i - 1] + dp[i - 1][w - wt[i - 1]]`
+
+* Add the current item's value.
+* Use the best value achievable with the remaining capacity.
+* Consider only the previous items in the remaining capacity calculation.
+
+**2. Exclude the item:**
+
+`dp[i - 1][w]`
+
+* Do not take the current item.
+* Keep the best value obtained using the previous items.
+
+`max()` selects the greater value.
+
+**Why use `i - 1` in the previous row?**
+
+It ensures that the current item is not selected more than once.
+
+### G. When the Item Does Not Fit
+
+```cpp
+else
+{
+    dp[i][w] = dp[i - 1][w];
+}
+```
+
+If the item's weight exceeds the current capacity, it cannot be included.
+
+Therefore, the result remains the same as the previous row, which considers only the earlier items.
+
+### H. Returning the Answer
+
+```cpp
+return dp[n][W];
+```
+
+Returns the bottom-right cell of the DP table.
+
+This cell contains the maximum value achievable using all `n` items with capacity `W`.
+
+### I. Main Function
+
+```cpp
+int n, W;
+
+cout << "Enter number of items: ";
+cin >> n;
+```
+
+* `n` stores the number of items.
+* `W` stores the knapsack capacity.
+
+```cpp
+vector<int> val(n), wt(n);
+```
+
+Creates two vectors to store the values and weights of the items.
+
+The program accepts the values and weights separately:
+
+```cpp
+for (int i = 0; i < n; i++)
+    cin >> val[i];
+```
+
+```cpp
+for (int i = 0; i < n; i++)
+    cin >> wt[i];
+```
+
+Finally, it calls the knapsack function and displays the maximum value:
+
+```cpp
+int maxValue = knapsack(W, wt, val, n);
+
+cout << "Maximum value in knapsack = " << maxValue << endl;
+```
+
+## 5. ALGORITHM WORKING WITH EXAMPLE
+
+Suppose we have the following items:
+
+| Item | Weight | Value |
+| ---- | -----: | ----: |
+| 1    |      2 |    12 |
+| 2    |      3 |    20 |
+| 3    |      4 |    30 |
+
+Knapsack capacity = 5
+
+Possible selections:
+
+* Item 1 + Item 2: Weight = 5, Value = 32.
+* Item 1 + Item 3: Weight = 6, exceeds capacity.
+* Item 2 + Item 3: Weight = 7, exceeds capacity.
+* Item 3 alone: Value = 30.
+* Item 2 alone: Value = 20.
+* Item 1 alone: Value = 12.
+
+Therefore, the maximum value is **32**, obtained by selecting Items 1 and 2.
+
+The DP table compares the inclusion and exclusion choices for each item and capacity, eventually storing this optimal result in `dp[3][5]`.
+
+## 6. TIME AND SPACE COMPLEXITY
+
+**Time Complexity: O(n × W)**
+
+* The outer loop runs `n` times.
+* The inner loop runs `W` times.
+* Each table entry is calculated in constant time.
+
+Therefore, the total time complexity is O(n × W).
+
+**Space Complexity: O(n × W)**
+
+The DP table contains `(n + 1) × (W + 1)` entries.
+
+**Important:** This is called pseudo-polynomial time because the complexity depends on the numerical capacity `W`, not just the number of input items.
+
+## 7. IMPORTANT ORAL QUESTIONS AND ANSWERS
+
+**Q1. What is the 0/1 Knapsack problem?**
+
+It is an optimization problem in which each item is either selected completely or excluded to maximize the total value within a given capacity.
+
+**Q2. Why is it called 0/1 Knapsack?**
+
+Because each item has two possibilities: 1 means included and 0 means excluded.
+
+**Q3. What is Dynamic Programming?**
+
+It solves a problem by storing the results of smaller subproblems to avoid repeated calculations.
+
+**Q4. Why do we use Dynamic Programming for 0/1 Knapsack?**
+
+It efficiently compares the inclusion and exclusion of items to find the maximum value.
+
+**Q5. What does `dp[i][w]` represent?**
+
+The maximum value obtainable using the first `i` items with capacity `w`.
+
+**Q6. Why is the DP table initialized with zeros?**
+
+With zero items or zero capacity, the maximum obtainable value is zero.
+
+**Q7. Why do we use the `max()` function?**
+
+To select the better result between including and excluding the current item.
+
+**Q8. Why do we use `i - 1` to access an item?**
+
+The DP table's item count begins at 1, whereas vector indices begin at 0.
+
+**Q9. What happens if an item weighs more than the current capacity?**
+
+The item is excluded, and the value from the previous row is used.
+
+**Q10. Can we divide an item in 0/1 Knapsack?**
+
+No. Each item must be taken completely or not taken at all.
+
+**Q11. What is the difference between 0/1 and Fractional Knapsack?**
+
+0/1 Knapsack does not allow dividing items, whereas Fractional Knapsack allows taking a fraction of an item.
+
+**Q12. What is the time complexity?**
+
+O(n × W).
+
+**Q13. What is the space complexity?**
+
+O(n × W), due to the two-dimensional DP table.
+
+**Q14. What is the optimal solution?**
+
+A feasible selection of items that gives the maximum total value.
+
+**Q15. What does `dp[n][W]` contain?**
+
+The maximum value obtainable using all items with the given capacity.
+
+**Q16. What is the difference between Greedy and Dynamic Programming?**
+
+Greedy makes a locally best choice at each step, while Dynamic Programming compares subproblem solutions and stores their results.
+
+**Q17. What is an application of 0/1 Knapsack?**
+
+Selecting projects within a fixed budget, choosing cargo items under weight limits, and selecting tasks under resource constraints.
+
+**Q18. What is pseudo-polynomial time?**
+
+A running time that depends on the numerical value of an input, such as knapsack capacity `W`, rather than only on its input length.
+
+## 8. CONCLUSION
+
+Successfully implemented the 0/1 Knapsack problem using Dynamic Programming in C++ and analyzed its time and space complexity.
+
+## 9. QUICK REVISION
+
+* Technique: Dynamic Programming
+* Item selection: Include or exclude
+* Fractional items: Not allowed
+* DP table: Two-dimensional
+* `dp[i][w]`: Maximum value using the first `i` items with capacity `w`
+* Decision: `max(include, exclude)`
+* Final answer: `dp[n][W]`
+* Time Complexity: O(n × W)
+* Space Complexity: O(n × W)

@@ -1,0 +1,322 @@
+# DAA EXPERIMENT 3: FRACTIONAL KNAPSACK
+
+## 1. AIM
+
+To write a C++ program to solve the Fractional Knapsack problem using a greedy method.
+
+## 2. THEORY
+
+The Knapsack problem involves selecting items with given weights and values to maximize the total value without exceeding the knapsack's capacity.
+
+In the **Fractional Knapsack problem**, we can take an entire item or a fraction of an item.
+
+**Greedy approach:** Calculate the value-to-weight ratio of each item, sort items in descending order of this ratio, and select the items with the highest ratios first.
+
+**Difference between Fractional and 0/1 Knapsack:**
+
+* Fractional Knapsack allows items to be divided.
+* 0/1 Knapsack does not allow items to be divided.
+
+## 3. CODE EXPLANATION
+
+### A. Header Files
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+```
+
+* `iostream`: Provides input and output using `cin` and `cout`.
+* `vector`: Stores the items dynamically.
+* `algorithm`: Provides the `sort()` function.
+* `using namespace std`: Avoids writing `std::` repeatedly.
+
+### B. Item Structure
+
+```cpp
+struct Item
+{
+    int weight;
+    int value;
+};
+```
+
+* Defines an item with two properties: weight and value.
+* `weight` stores the item's weight.
+* `value` stores the item's value.
+* A structure groups these related properties together.
+
+### C. Comparison Function
+
+```cpp
+bool compare(Item a, Item b)
+{
+    double r1 = (double)a.value / a.weight;
+    double r2 = (double)b.value / b.weight;
+
+    return r1 > r2;
+}
+```
+
+**Explanation:**
+
+* Calculates the value-to-weight ratio of two items.
+* `(double)` converts the value to a decimal type to perform accurate division.
+* `r1` and `r2` store the ratios.
+* `return r1 > r2` arranges items in descending order of their ratios.
+
+**Why do we sort by ratio?**
+
+We want to select the items that provide the highest value per unit of weight first.
+
+### D. Fractional Knapsack Function
+
+```cpp
+double fractionalKnapsack(int W, vector<Item>& items)
+{
+    sort(items.begin(), items.end(), compare);
+
+    double totalValue = 0;
+```
+
+**Explanation:**
+
+* `W` represents the remaining knapsack capacity.
+* `vector<Item>& items` passes the items by reference.
+* `sort()` arranges the items according to their value-to-weight ratios.
+* `totalValue` stores the total value collected.
+* The function returns a `double` because fractional items can produce decimal values.
+
+### E. Processing the Items
+
+```cpp
+for (auto &i : items)
+{
+    if (W == 0)
+        break;
+```
+
+* The loop visits each item in sorted order.
+* `auto &i` refers to the current item in the vector.
+* If `W == 0`, the knapsack is full, so the loop stops.
+
+### F. Taking a Complete Item
+
+```cpp
+if (i.weight <= W)
+{
+    W = W - i.weight;
+    totalValue = totalValue + i.value;
+}
+```
+
+* Checks whether the entire item fits in the remaining capacity.
+* If it fits, its weight is subtracted from `W`.
+* Its full value is added to `totalValue`.
+
+### G. Taking a Fraction of an Item
+
+```cpp
+else
+{
+    totalValue = totalValue +
+                 i.value * ((double)W / i.weight);
+    W = 0;
+}
+```
+
+* Executes when the complete item cannot fit.
+* `W / i.weight` calculates the fraction of the item that can be taken.
+* Multiplying this fraction by the item's value calculates the value obtained.
+* `W = 0` indicates that the knapsack is full.
+
+**Example:** If an item weighs 10 kg and is worth ₹100, taking 5 kg gives a value of ₹50.
+
+### H. Returning the Result
+
+```cpp
+return totalValue;
+```
+
+Returns the maximum total value calculated by the algorithm.
+
+### I. Main Function
+
+```cpp
+int main()
+{
+    int n, W;
+
+    cout << "Enter number of items: ";
+    cin >> n;
+
+    vector<Item> items(n);
+```
+
+* `n` stores the number of items.
+* `W` stores the knapsack capacity.
+* `vector<Item> items(n)` creates a vector to store all items.
+
+The program then accepts each item's value and weight:
+
+```cpp
+for (int i = 0; i < n; i++)
+{
+    cin >> items[i].value >> items[i].weight;
+}
+```
+
+**Important:** The input order is value first, then weight.
+
+Finally:
+
+```cpp
+double maxValue = fractionalKnapsack(W, items);
+
+cout << "Maximum value in knapsack = "
+     << maxValue << endl;
+```
+
+* Calls the knapsack function.
+* Stores the returned maximum value in `maxValue`.
+* Displays the result.
+
+## 4. ALGORITHM WORKING WITH JOURNAL EXAMPLE
+
+Given:
+
+| Item | Weight | Value | Value/Weight Ratio |
+| ---- | -----: | ----: | -----------------: |
+| 1    |      5 |    30 |               6.00 |
+| 2    |     10 |    40 |               4.00 |
+| 3    |     15 |    45 |               3.00 |
+| 4    |     22 |    77 |               3.50 |
+| 5    |     25 |    90 |               3.60 |
+
+Assume the knapsack capacity is **60 units**.
+
+**Step 1: Sort by ratio**
+
+The order becomes Item 1, Item 2, Item 5, Item 4, Item 3.
+
+**Step 2: Select items**
+
+* Item 1: Take all 5 units. Value = 30. Remaining capacity = 55.
+* Item 2: Take all 10 units. Value = 40. Remaining capacity = 45.
+* Item 5: Take all 25 units. Value = 90. Remaining capacity = 20.
+* Item 4: Take 20 of its 22 units. Value obtained = 77 × (20/22) = 70.
+
+The knapsack is now full.
+
+**Maximum total value = 30 + 40 + 90 + 70 = 230.**
+
+Note: The journal does not specify the capacity for this example. The capacity of 60 is assumed here only to demonstrate the algorithm.
+
+## 5. TIME AND SPACE COMPLEXITY
+
+Let `n` be the number of items.
+
+**Time Complexity: O(n log n)**
+
+* Sorting takes O(n log n).
+* Processing all items takes O(n).
+* Therefore, the overall time complexity is O(n log n).
+
+**Auxiliary Space Complexity: O(log n) typically**
+
+* The algorithm processes items using a loop.
+* Sorting may use O(log n) stack space with a typical implementation of `std::sort`.
+* The algorithm itself uses O(1) additional working space, excluding sorting.
+
+## 6. IMPORTANT ORAL QUESTIONS AND ANSWERS
+
+**Q1. What is the Knapsack problem?**
+
+It is an optimization problem in which we select items to maximize total value without exceeding a given capacity.
+
+**Q2. What is Fractional Knapsack?**
+
+A problem in which items can be divided to fill the knapsack and maximize its value.
+
+**Q3. What is a greedy algorithm?**
+
+An algorithm that makes the best available local choice at each step.
+
+**Q4. Why is Fractional Knapsack solved using a greedy approach?**
+
+Because selecting items in decreasing order of value-to-weight ratio gives an optimal solution for the fractional version.
+
+**Q5. What is the value-to-weight ratio?**
+
+It is the value of an item divided by its weight.
+
+**Q6. Why do we sort items in descending order of their ratios?**
+
+To select items that provide the highest value per unit of weight first.
+
+**Q7. What is the difference between Fractional and 0/1 Knapsack?**
+
+Fractional Knapsack allows taking part of an item, while 0/1 Knapsack allows only taking or rejecting the complete item.
+
+**Q8. What is the purpose of the compare function?**
+
+It sorts items in descending order of their value-to-weight ratios.
+
+**Q9. Why is the return type of `fractionalKnapsack()` double?**
+
+Because the maximum value may contain a fractional part.
+
+**Q10. Why do we use a vector?**
+
+To store a dynamically sized collection of items.
+
+**Q11. What happens when an item cannot fit completely?**
+
+The algorithm takes the fraction that fits in the remaining capacity and adds its proportional value.
+
+**Q12. What is the time complexity of Fractional Knapsack?**
+
+O(n log n), mainly due to sorting.
+
+**Q13. What is the auxiliary space complexity?**
+
+Typically O(log n) for sorting, excluding the input vector.
+
+**Q14. What are some real-life applications?**
+
+1. Cargo loading when divisible goods can be loaded in limited space.
+2. Allocating a limited budget across divisible resources to maximize returns under appropriate assumptions.
+
+**Q15. What is the purpose of `W = 0`?**
+
+It indicates that the knapsack is full after taking the required fraction of an item.
+
+**Q16. Can the greedy method always solve 0/1 Knapsack optimally?**
+
+No. The greedy method based on value-to-weight ratio does not always produce the optimal solution for 0/1 Knapsack.
+
+**Q17. Why is `(double)` used in the ratio calculation?**
+
+To perform floating-point division instead of integer division.
+
+**Q18. What does `sort(items.begin(), items.end(), compare)` do?**
+
+It sorts the items using the comparison function.
+
+## 7. CONCLUSION
+
+Successfully implemented the Fractional Knapsack problem using a greedy strategy in C++.
+
+## 8. QUICK REVISION
+
+* Algorithm type: Greedy
+* Goal: Maximize total value
+* Selection rule: Highest value-to-weight ratio first
+* Fractional items: Allowed
+* 0/1 Knapsack: Items cannot be divided
+* Sorting function: `sort()`
+* Time complexity: O(n log n)
+* Typical auxiliary space: O(log n) for sorting
+* Partial item value: `item value × (remaining capacity / item weight)`
